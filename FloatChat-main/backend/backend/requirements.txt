@@ -1,0 +1,11 @@
+flask
+python-dotenv
+google-genai
+folium
+matplotlib
+numpy
+pandas
+scipy
+xarray
+netCDF4
+h5netcdf

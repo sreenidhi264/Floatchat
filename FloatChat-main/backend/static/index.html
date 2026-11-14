@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FloatChat — SaaS Terminal</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- Column 1: Sidebar Navigation -->
+        <nav class="sidebar-nav">
+            <div class="nav-brand"><i class="fa-solid fa-anchor logo-icon"></i></div>
+            <ul class="nav-links">
+                <li class="active" data-nav="chat" title="Chat & Monitor"><i class="fa-solid fa-message"></i></li>
+                <li data-nav="coords" title="Search Coordinates"><i class="fa-solid fa-map-location-dot"></i></li>
+                <li data-nav="docs" title="Argo Documentation"><i class="fa-solid fa-book-open"></i></li>
+                <li data-nav="export" title="Export Data (CSV)"><i class="fa-solid fa-download"></i></li>
+                <li data-nav="settings" title="System Status"><i class="fa-solid fa-sliders"></i></li>
+            </ul>
+            <div class="nav-profile">
+                <div class="avatar">IN</div>
+            </div>
+        </nav>
+
+        <!-- Column 2: Float Explorer -->
+        <section class="float-explorer">
+            <div class="explorer-header">
+                <h2>Tracking List</h2>
+                <div class="filter-controls">
+                    <button class="filter-badge active">All</button>
+                    <button class="filter-badge">BGC</button>
+                    <button class="filter-badge">Core</button>
+                </div>
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="floatSearch" placeholder="Search by region or Float ID...">
+                </div>
+            </div>
+            <div id="floatList" class="float-list">
+                <!-- JS populated -->
+            </div>
+        </section>
+
+        <!-- Column 3A: Details Panel (Default) -->
+        <section class="details-container" id="detailsPanel">
+            <div class="details-header">
+                <div class="status-row">
+                    <span class="status-badge transit">ACTIVE / PROFILING</span>
+                </div>
+                <h1 id="detailFloatId">SELECT A FLOAT</h1>
+            </div>
+            <div class="details-body">
+                <div class="float-graphic">
+                    <i class="fa-solid fa-satellite-dish float-icon"></i>
+                    <p class="float-model">Argo Profiling Sensor</p>
+                    <p class="float-region" id="detailRegion">📍 Global Ocean</p>
+                </div>
+                <div class="info-card">
+                    <div class="timeline-row">
+                        <div class="loc">
+                            <span class="label">Latest Lat</span>
+                            <strong id="detailLat">--</strong>
+                        </div>
+                        <div class="timeline-line">
+                            <div class="progress-bar"></div>
+                            <i class="fa-solid fa-location-arrow ship-icon"></i>
+                        </div>
+                        <div class="loc text-right">
+                            <span class="label">Latest Lon</span>
+                            <strong id="detailLon">--</strong>
+                        </div>
+                    </div>
+                    <div class="route-info">
+                        <span>Cycle: <strong id="detailCycle">--</strong></span>
+                        <span>Date: <strong id="detailDate">--</strong></span>
+                    </div>
+                </div>
+                <div class="info-card operator-card">
+                    <div class="operator-info">
+                        <div class="avatar-small">IN</div>
+                        <div class="op-text">
+                            <strong>INCOIS Data Center</strong>
+                            <span>Deploying Agency</span>
+                        </div>
+                    </div>
+                    <button class="contact-btn"><i class="fa-regular fa-envelope"></i> Contact</button>
+                </div>
+                <div class="details-section-title">Latest Telemetry</div>
+                <div class="sensor-grid">
+                    <div class="sensor-box">
+                        <span class="label">TYPE</span>
+                        <strong id="detailType" style="color: var(--neon-green);">--</strong>
+                    </div>
+                    <div class="sensor-box">
+                        <span class="label">STATUS</span>
+                        <strong>Healthy</strong>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn-primary" id="btnMap">Map Route</button>
+                    <button class="btn-secondary" id="btnPlot">View Plot</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Column 3B: Chat Interface (Hidden by Default) -->
+        <section class="chat-container" id="chatPanel" style="display: none;">
+            <div class="chat-header">
+                <div class="header-info">
+                    <h1>FloatChat AI</h1>
+                    <span class="status-pill active"><span class="pulse-dot"></span> Online</span>
+                </div>
+                <div class="header-actions">
+                    <button id="clearChatBtn" class="action-btn" title="Clear Chat"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+            </div>
+            <div id="chatMessages" class="chat-messages">
+                <div class="message bot-message fade-in-up">
+                    <div class="message-content">
+                        <p>Hello! I am <strong>FloatChat</strong>. I can query data, plot profiles, or map float trajectories!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <div class="typing-indicator-wrapper" id="typingIndicator">
+                    <div class="typing-indicator"><span></span><span></span><span></span></div>
+                    <span class="typing-text">Processing Argo Query...</span>
+                </div>
+                <form id="chatForm" class="chat-form">
+                    <input type="text" id="userInput" placeholder="Ask FloatChat about Argo data..." autocomplete="off">
+                    <button type="submit" class="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </section>
+
+    <!-- Coordinate Search Modal -->
+    <div class="modal-overlay" id="coordModal" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-map-location-dot"></i> &nbsp;Search by Coordinates</h3>
+                <button class="modal-close" id="coordModalClose"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="color:var(--text-secondary); margin-bottom:16px; font-size:13px;">Enter a latitude/longitude to find the nearest Argo float profiles in the database.</p>
+                <div class="coord-inputs">
+                    <div class="coord-field">
+                        <label>Latitude (°N)</label>
+                        <input type="number" id="coordLat" placeholder="e.g. 13.04" step="0.01" min="-90" max="90">
+                    </div>
+                    <div class="coord-field">
+                        <label>Longitude (°E)</label>
+                        <input type="number" id="coordLon" placeholder="e.g. 80.28" step="0.01" min="-180" max="180">
+                    </div>
+                    <div class="coord-field">
+                        <label>Radius (° degrees)</label>
+                        <input type="number" id="coordRadius" placeholder="e.g. 3" value="3" step="0.5" min="0.5" max="15">
+                    </div>
+                </div>
+                <button class="send-btn" id="coordSearchBtn" style="width:100%; margin-top:16px; padding:12px; border-radius:8px;">
+                    <i class="fa-solid fa-magnifying-glass"></i> &nbsp;Search FloatChat
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Status Modal -->
+    <div class="modal-overlay" id="statusModal" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-sliders"></i> &nbsp;System Status</h3>
+                <button class="modal-close" id="statusModalClose"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="status-rows" id="statusRows">
+                    <div class="status-row"><span>Flask API</span><span class="status-pill active"><span class="pulse-dot"></span>Online</span></div>
+                    <div class="status-row"><span>SQLite Database</span><span class="status-pill active"><span class="pulse-dot"></span>Connected</span></div>
+                    <div class="status-row"><span>Gemini AI</span><span class="status-pill active"><span class="pulse-dot"></span>Active</span></div>
+                    <div class="status-row"><span>Data Region</span><span style="color:var(--neon-cyan); font-size:12px;">Arabian Sea + Bay of Bengal</span></div>
+                    <div class="status-row"><span>Coverage</span><span style="color:var(--neon-teal); font-size:12px;">2021 – 2026</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script assets -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
